@@ -67,7 +67,7 @@ double LineFit::ClaMutiA(std::vector<double> &Vx, int ex)
 	double ReSum = 0;
 	for (int i = 0; i < Vx.size(); i++)
 	{
-		ReSum += pow(Vx[i] - Vx[0], ex);
+		ReSum += pow(Vx[i], ex);
 	}
 	return ReSum;
 }
@@ -77,7 +77,7 @@ double LineFit::ClaMutiB(std::vector<double> &Vx, std::vector<double> &Vy, int e
 	double dReMultiSum = 0;
 	for (int i = 0; i < Vx.size(); i++)
 	{
-		dReMultiSum += pow(Vx[i] - Vx[0], ex) * (Vy[i] - Vy[0]);
+		dReMultiSum += pow(Vx[i], ex) * (Vy[i]);
 	}
 	return dReMultiSum;
 }
@@ -123,8 +123,8 @@ void LineFit::fitWithLagrange(std::vector<double> &X, std::vector<double> &Y, in
 
 	for (int i = 0; i < orders + 1; i++)
 	{
-		A(i, orders + 1) = pow(X[0] - X[0], i);
-		A(i, orders + 2) = pow(X[X.size() - 1] - X[0], i);
+		A(i, orders + 1) = pow(X[0] , i);
+		A(i, orders + 2) = pow(X[X.size() - 1], i);
 		b[i] = ClaMutiB(X, Y, i);
 	}
 
@@ -154,19 +154,8 @@ void LineFit::fitWithLagrange(std::vector<double> &X, std::vector<double> &Y, in
 
 
 
-	b[orders + 1] = Y[0] - Y[0];
-	b[orders + 2] = Y[Y.size() - 1] - Y[0];
-
-	//for (int j = 0; j < orders + 1; j++)
-	//{
-	//	A(orders + 1, j) = pow(X[0] - X[0], j);
-	//}
-	//for (int j = 0; j < orders + 1; j++)
-	//{
-	//	A(orders + 2, j) = pow(X[X.size() - 1] - X[0], j);
-	//}
-
-	//std::cout << A << std::endl;
+	b[orders + 1] = Y[0] ;
+	b[orders + 2] = Y[Y.size() - 1] ;
 
 
 	A.block(orders + 1, 0, 1, orders + 1) = A.block(0, orders + 1,  orders + 1, 1).transpose();
@@ -178,23 +167,12 @@ void LineFit::fitWithLagrange(std::vector<double> &X, std::vector<double> &Y, in
 	Eigen::VectorXd result = A.householderQr().solve(b);
 
 
-
-	double coeffA, coeffB, coeffC, coeffD = 0;
 	if (result.size() == orders + 3)
 	{
-		coeffA = result[0];
-		coeffB = result[1];
-		coeffC = result[2];
-		if (orders == 3)
-		{
-			coeffD = result[3];
-		}
-
-		double &a0 = X[0];
-		A0 = coeffA - coeffD * a0 * a0 * a0 + coeffC * a0 * a0 - coeffB * a0 + Y[0];
-		A1 = 3 * coeffD * a0 * a0 - 2 * coeffC * a0 + coeffB;
-		A2 = -3 * coeffD * a0 + coeffC;
-		A3 = coeffD;
+		A0 = result[0];
+		A1 = result[1];
+		A2 = result[2];
+		A3 =  result[3];
 	}
 }
 
